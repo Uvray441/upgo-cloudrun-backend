@@ -1,20 +1,23 @@
-# Use a slim Python image
-FROM python:3.10-slim
+FROM openjdk:17-slim
 
-# Set working directory
+# unzip, curl, gradle, git, python install korte hobe
+RUN apt-get update && apt-get install -y unzip curl git python3-pip zip && \
+    apt-get clean
+
+# firebase-admin install
+RUN pip3 install firebase-admin flask
+
+# App directory create
 WORKDIR /app
 
-# Copy only requirements first (for better caching)
-COPY requirements.txt .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the application code
+# All files copy
 COPY . .
 
-# Cloud Run expects the app to listen on port 8080
+# Ensure permissions for gradlew
+RUN chmod +x /app/gradlew || true
+
+# Port expose
 EXPOSE 8080
 
-# Run the app
-CMD ["python", "main.py"]
+# Run backend
+CMD ["python3", "main.py"]
