@@ -1,17 +1,20 @@
-# Use Python base image
+# Use a slim Python image
 FROM python:3.10-slim
 
 # Set working directory
 WORKDIR /app
 
-# Copy files
-COPY . .
+# Copy only requirements first (for better caching)
+COPY requirements.txt .
 
-# Install dependencies
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port (Cloud Run runs on 8080)
+# Copy the rest of the application code
+COPY . .
+
+# Cloud Run expects the app to listen on port 8080
 EXPOSE 8080
 
-# Run the Flask app
-CMD ["python", "main.py"]
+# Start the Flask app via our build_and_upload script
+CMD ["python", "build_and_upload.py"]
