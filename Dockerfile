@@ -38,17 +38,28 @@ RUN sdkmanager \
     "platforms;android-34" \
     "emulator"
 
-# Set working dir
+# Set working directory for android build
+WORKDIR /android
+
+# Copy android project only
+COPY android-project/ /android/
+
+# Make gradlew executable
+RUN chmod +x ./gradlew
+
+# Build APK (optional, or you can do it in main.py)
+# RUN ./gradlew assembleDebug
+
+# Set working directory for Flask backend
 WORKDIR /app
 
-# Copy all project files
-COPY . .
-
-# Ensure gradlew is executable
-RUN chmod +x ./gradlew
+# Copy backend code
+COPY main.py .
+COPY firebase_config.json .
+COPY requirements.txt .
 
 # Expose Flask port
 EXPOSE 8080
 
-# Run Python backend
+# Run backend
 CMD ["python3", "main.py"]
