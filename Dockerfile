@@ -16,5 +16,5 @@ COPY . .
 # Cloud Run expects the app to listen on port 8080
 EXPOSE 8080
 
-# Start the Flask app via our build_and_upload script
-CMD ["python", "build_and_upload.py"]
+# Run the app
+CMD ["python", "main.py"]
