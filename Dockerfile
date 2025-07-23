@@ -1,23 +1,54 @@
 FROM openjdk:17-slim
 
-# unzip, curl, gradle, git, python install korte hobe
-RUN apt-get update && apt-get install -y unzip curl git python3-pip zip && \
-    apt-get clean
+# Required packages
+RUN apt-get update && apt-get install -y \
+    unzip \
+    curl \
+    git \
+    python3-pip \
+    zip \
+    wget \
+    lib32stdc++6 \
+    lib32z1 \
+    && apt-get clean
 
-# firebase-admin install
+# Install Firebase Admin + Flask
 RUN pip3 install firebase-admin flask
 
-# App directory create
+# Set environment variables
+ENV ANDROID_SDK_ROOT=/sdk
+ENV ANDROID_HOME=/sdk
+ENV PATH="${PATH}:/sdk/cmdline-tools/latest/bin:/sdk/platform-tools:/sdk/emulator:/sdk/build-tools/34.0.0"
+
+# Install Android SDK Command Line Tools
+RUN mkdir -p /sdk/cmdline-tools && \
+    cd /sdk/cmdline-tools && \
+    wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip && \
+    unzip tools.zip && \
+    rm tools.zip && \
+    mv cmdline-tools latest
+
+# Accept all SDK licenses
+RUN yes | sdkmanager --licenses
+
+# Install platform-tools, build-tools and platform (adjust API level if needed)
+RUN sdkmanager \
+    "platform-tools" \
+    "build-tools;34.0.0" \
+    "platforms;android-34" \
+    "emulator"
+
+# Set working dir
 WORKDIR /app
 
-# All files copy
+# Copy all project files
 COPY . .
 
-# Ensure permissions for gradlew
-RUN chmod +x /app/gradlew || true
+# Ensure gradlew is executable
+RUN chmod +x ./gradlew
 
-# Port expose
+# Expose Flask port
 EXPOSE 8080
 
-# Run backend
+# Run Python backend
 CMD ["python3", "main.py"]
